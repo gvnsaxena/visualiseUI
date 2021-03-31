@@ -1,14 +1,8 @@
 
-let initialState = {
-    counter:0
-}
-
-const rootReducer = (state=initialState, action) => {
+const rootReducer = (state = {}, action) => {
     switch(action.type){
-        case 'increment':
-            return {...state, counter: state.counter+1};
-        case 'decrement':
-            return {...state, counter: state.counter-1};
+        case 'SET_API_DATA':
+            return {...state, apiData: action.payload};
         default:
             return state;
     }

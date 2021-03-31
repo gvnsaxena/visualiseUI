@@ -1,33 +1,59 @@
-import React, { useState, useEffect } from 'react';
+import React, { Fragment, useState, useEffect, memo } from 'react';
+import {useSelector, useDispatch} from 'react-redux';
+import LineGraph from './components/line-graph'
+import UITable from './components/ui-table'
 import './App.css';
+import * as actions from './action/app-actions';
+import {INTELLISENSE_API} from './config/config';
 
-
-//https://devexpress.github.io/devextreme-reactive/react/chart/demos/line/line/
 const App = () => {
 
-  const callAPI = () => {
-    fetch('https://reference.intellisense.io/thickenernn/v1/referencia')
-      .then((response) => {
-          response.json().then(function(data) {
-            //setInvoiceList(data)
-          });
-        }
-      )
-      .catch((err) => {
-        console.log('Error in API', err);
+  const dispatch = useDispatch();
+  const intellisenseData = useSelector((state)=> {
+    return state.apiData
+  });
+  const [tk1KeyValue, setTK1] = useState([]);
+  const [chartData, setChartData] = useState([]);
+
+  const createChartData = (key) => {
+    let lineData = [];
+    const { TK1 } = intellisenseData.current.data;
+
+    for (let i = 0; i < TK1[key].times.length; i++) {
+      lineData.push({
+        label: TK1[key].times[i],
+        value: TK1[key].values[i],
       });
+    }
+    setChartData(prevState => ([...prevState, 
+      lineData
+    ]));
   }
-useEffect(()=>{
-  callAPI()
+useEffect(() => {
+  dispatch(actions.getAPIData(INTELLISENSE_API));
+  // eslint-disable-next-line
 }, [])
 
+useEffect(() => {
+  if(intellisenseData) {
+    const { TK1 } = intellisenseData.current.data;
+      for(let [key, { values }] of Object.entries(TK1)) {
+          key.startsWith('TK1')   
+          && setTK1(prevState => ({...prevState, 
+              [key]: values[values.length-1]
+              }));
+          key.startsWith('TK1') && createChartData(key);
+      }
+  }
+    // eslint-disable-next-line
+}, [intellisenseData])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        
-      </header>
-    </div>
+    <Fragment>
+        <UITable tk1Key={tk1KeyValue} />
+        <LineGraph chartData={chartData} />
+    </Fragment>
   );
 }
 
-export default App;
+export default memo(App);

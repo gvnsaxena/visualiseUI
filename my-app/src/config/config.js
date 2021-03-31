@@ -1,0 +1,1 @@
+export const INTELLISENSE_API = 'https://reference.intellisense.io/thickenernn/v1/referencia';
