@@ -26,7 +26,8 @@ const App = () => {
       });
     }
     setChartData(prevState => ([...prevState, 
-      lineData
+      {key,
+      lineData}
     ]));
   }
 useEffect(() => {

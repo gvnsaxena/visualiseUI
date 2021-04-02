@@ -7,15 +7,15 @@ const LineGraph = ({...props}) => {
     const drawLineChart = (data) => {
         var margin = { top: 20, right: 80, bottom: 30, left: 50 },
              width = 600 - margin.left - margin.right,
-             height = 300 - margin.top - margin.bottom;
+             height = 500 - margin.top - margin.bottom;
 
         const yMaxValue = d3.max(data, function (d) { 
-            return d3.max(d, function (d) { 
+            return d3.max(d.lineData, function (d) { 
                 return d.value; 
-            }) });
-        const xMinValue = d3.min(data[0], d => d.label);
-        const xMaxValue = d3.max(data[0], d => d.label);
-
+            })}) + 30;
+        const xMinValue = d3.min(data[0].lineData, d => d.label);
+        const xMaxValue = d3.max(data[0].lineData, d => d.label);
+  
             const xScale = d3
                 .scaleLinear()
                 .domain([xMinValue, xMaxValue])
@@ -35,6 +35,8 @@ const LineGraph = ({...props}) => {
             })    
             .curve(d3.curveMonotoneX);
 
+            var color = d3.scaleOrdinal(d3.schemeCategory10);
+
             var svg = d3.select("#divChartTrends").append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
@@ -51,24 +53,59 @@ const LineGraph = ({...props}) => {
                 .attr('class', 'y-axis')
                 .call(d3.axisLeft(yScale));
 
+            var legend = svg.selectAll('.segment')
+                .data(data)
+                .enter()
+                .append('g')
+                .attr('class', 'legend');
+
+            legend.append("path")
+                .attr("class", "line")
+                .attr('fill', 'none')
+                .attr("d", function (d) { 
+                    return line(d.lineData.map((d) => d)); 
+                })
+                .style("stroke", function(d) { 
+                    return color(d.key); 
+                });
+          
+              legend.append('rect')
+                .attr('x', width - 170)
+                .attr('fill', 'none')
+                .attr('y', function(d, i) {
+                    return i * 20;
+                })
+                  .attr('width', 10)
+                  .attr('height', 10)
+                  .style('fill', function(d) {
+                    return color(d.key);
+                  });
+          
+              legend.append('text')
+                .attr('x', width - 152)
+                .attr('y', function(d, i) {
+                    return (i * 20) + 11;
+                  })
+                .text(function(d) {
+                  return d.key;
+                });
+
             var segment = svg.selectAll(".segment")
                 .data(data)
                 .enter().append("g")
                 .attr("class", "segment");
-            
-            var color = d3.scaleOrdinal(d3.schemeCategory10);
 
             segment.append("path")
             .attr("class", "line")
             .attr('fill', 'none')
             .attr("id", function (d) { 
-                    return d[0].value;
+                    return d.key;
             })
             .attr("d", function (d) { 
-                return line(d.map((d) => d)); 
+                return line(d.lineData.map((d) => d)); 
             })
             .style("stroke", function (d) { 
-                return color(d[0].value);
+                return color(d.key);
         })
     }
 
